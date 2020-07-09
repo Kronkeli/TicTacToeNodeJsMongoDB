@@ -1,4 +1,4 @@
-const express = require("express");
+var express = require("express");
 var createError = require("http-errors");
 var path = require("path");
 var cookieParser = require("cookie-parser");
@@ -9,7 +9,7 @@ var Promise = require("bluebird");
 var indexRouter = require("./routes/index");
 var rowsRouter = require("./routes/rows");
 
-const app = express();
+var app = express();
 
 // Set up mongoose connection
 var mongoose = require("mongoose");
@@ -56,6 +56,8 @@ app.use(function(err, req, res, next) {
   res.render("error");
 });
 
-var listener = app.listen(8080, function() {
-  console.log("Listening on port " + listener.address().port);
-});
+// var listener = app.listen(8080, function() {
+//   console.log("Listening on port " + listener.address().port);
+// });
+
+module.exports = app;
