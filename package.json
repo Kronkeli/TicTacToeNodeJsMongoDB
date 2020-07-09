@@ -4,8 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "./node_modules/parcel-bundler/bin/cli.js app.js --port 8080",
-    "build": "parcel build app.js"
+    "start": "node app.js"
   },
   "engine": {
     "node": "*",
