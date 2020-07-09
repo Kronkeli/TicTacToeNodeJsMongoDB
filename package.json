@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js localhost 8080"
+    "start": "./node_modules/parcel-bundler/bin/cli.js app.js localhost 8080",
+    "build": "parcel build index.html"
   },
   "engine": {
     "node": "*",
