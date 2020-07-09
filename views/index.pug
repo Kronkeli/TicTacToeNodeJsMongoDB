@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+  h2 Start the game already! (11)
+  form(method='POST' action="/move")
+    button.btn.btn-primary(type='submit') GO!

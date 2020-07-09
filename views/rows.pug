@@ -1,0 +1,23 @@
+extends layout
+block scripts
+  script(type="text/javascript", src="/gamelogic.js")  
+block content
+  h1= title
+  - if (playerturn === 1)
+    - console.log("YKSI eli + " + playerturn)
+    p#turnIndicator First persons turn
+  - else if ( playerturn === 2)
+    - console.log("KAKSI eli + " + playerturn)
+    p#turnIndicator Second persons turn
+  - else
+    - console.log("KOLME eli " +playerturn)
+    p#turnIndicator First to reach 5 in a row wins!
+  div
+    table#board(border="1")
+      tbody
+        each row in rows_list
+          tr
+            each cell in row.content
+              td #{cell}
+  form(method='POST' action="/rows/reset")
+    button.btn.btn-primary(type='submit') Restart?

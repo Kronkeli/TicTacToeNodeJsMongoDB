@@ -1,0 +1,37 @@
+{
+  "name": "tictactoe-expressv2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js localhost 8080"
+  },
+  "engine": {
+    "node": "*",
+    "npm": "*"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "^4.16.4",
+    "express-validator": "^5.3.0",
+    "http-errors": "~1.6.2",
+    "mongoose": "^5.9.21",
+    "morgan": "~1.9.0",
+    "pug": "^2.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "1.18.4",
+    "bluebird": "^3.5.3",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "^4.16.4",
+    "express-validator": "^5.3.0",
+    "http-errors": "~1.6.2",
+    "mongoose": "^5.9.21",
+    "morgan": "~1.9.0",
+    "pug": "^2.0.4"
+  },
+  "keywords": []
+}
