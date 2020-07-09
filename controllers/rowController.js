@@ -72,28 +72,15 @@ exports.clearFill = function(req, res, next) {
     if (err) {
       console.log("update epäonnistui jostain syystä");
     } else {
-      console.log("taulukko tyhjennetty ja " + writeResult);
-      res.redirect("/rows");
+      Player.update({}, { $set: { number: 1 } }).exec(function(
+        err,
+        writeResult
+      ) {
+        if (!err) {
+          console.log("taulukko tyhjennetty ja pelaaja vaihdettu");
+          res.redirect("/rows");
+        }
+      });
     }
   });
-  // Row.deleteMany({}).exec(function(err) {
-  //   if (err) {
-  //     console.log("Removing all rows failed!");
-  //     return next(err);
-  //   } else {
-  // Row.insert([
-  //   { _id: 0, content: ["", "", "", "", ""] },
-  //   { _id: 1, content: ["", "", "", "", ""] },
-  //   { _id: 2, content: ["", "", "", "", ""] },
-  //   { _id: 3, content: ["", "", "", "", ""] },
-  //   { _id: 4, content: ["", "", "", "", ""] }
-  // ]).exec(function(err) {
-  //   if (err) {
-  //     return next(err);
-  //   } else {
-  //     res.redirect("/rows");
-  //   }
-  // });
-  //   }
-  // });
 };
