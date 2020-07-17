@@ -2,7 +2,8 @@
   "name": "tictactoe-expressv2",
   "version": "1.0.0",
   "scripts": {
-    "start": "node ./bin/www.js"
+    "start": "node ./bin/www.js",
+    "devstart": "nodemon ./bin/www.js"
   },
   "engine": {
     "node": "*",

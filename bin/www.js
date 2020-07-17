@@ -29,8 +29,6 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-console.log("tekeekö mitään WWW??");
-
 server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);

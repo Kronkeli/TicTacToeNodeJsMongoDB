@@ -1,5 +1,6 @@
 var Row = require("../models/row");
 var Player = require("../models/player");
+const { body } = require("express-validator/check");
 
 // Ehkä tarvitaan puhdistamaan syötteitä
 // Good validation documentation available at https://express-validator.github.io/docs/
@@ -18,10 +19,19 @@ exports.index = function(req, res, next) {
           console.log("error in finding turn data");
           return next(err);
         } else {
-          res.render("rows", {
-            title: "Peliä!",
-            playerturn: turnData.number,
-            rows_list: list_rows
+          // Successful, so render
+          // See more at https://expressjs.com/en/api.html#res.format
+          res.format({
+            'text/html': function(){
+              res.render('rows', { title: 'Peliä!', rows_list: list_rows, playerturn: turnData.number});
+            },
+            'json': function(){
+              res.json({'rows_list': list_rows, 'playerturn': turnData.number});
+            },
+            'default': function(){
+              // log the request and respond with 406
+              res.status(406).send('Not Acceptable');
+            }
           });
         }
       });
@@ -32,13 +42,20 @@ exports.index = function(req, res, next) {
 // Change the content of specific element in "content" array
 exports.mark = function(req, res, next) {
   // Mark "X" or "Y" depending on turnToggle
-  var tekst = "";
-  for (let i = 0; i < req.body.rowContent.length; i++) {
-    tekst = tekst + " " + req.body.rowContent[i];
-  }
-  Row.findOneAndUpdate(
-    { _id: req.body.rowNumber },
-    { $set: { content: req.body.rowContent.split(",") } }
+  console.log("mitä korvataaan " + ['content.#{req.body.colNumber}.value']);
+  console.log("millä korjataan " + req.body.rowContent[req.body.colNumber]);
+  var tekst1 = 'content.'+ String(req.body.colNumber);
+  var tekst2 = tekst1 + '.value';
+  console.log("tekst1: " + tekst1);
+  console.log("tekst2: " + tekst2);
+  var bodyIndex = {};
+  bodyIndex['content.' + String(req.body.colNumber)] = String(req.body.rowContent[req.body.colNumber]);
+  console.log("bodyIndex: " + bodyIndex);
+  Row.updateOne(
+    // { _id: req.body.rowNumber, ['${tekst1}'] : req.body.colNumber },
+    // { $set: { "content.$.content" :  req.body.rowContent[req.body.colNumber] } }
+    { _id: req.body.rowNumber},
+    { $set: bodyIndex }
   ).exec(function(err) {
     if (err) {
       console.log("merkkaus ei onnistunut");
@@ -55,10 +72,6 @@ exports.mark = function(req, res, next) {
         }
       );
     }
-    console.log("nyt ollaan jossain!");
-    console.log("terveiusin controller " + req.body.rowNumber);
-    console.log("terveisin controller " + req.body.rowContent);
-    console.log("terveisin cvontroller " + req.body.newPlayerNumber);
   });
 };
 

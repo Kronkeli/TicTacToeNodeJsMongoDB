@@ -1,9 +1,17 @@
-// Variables
+// Some global variables
 var boord;
 var boardData = [];
 var playerTurn;
+var gameOverEvent;
 
-console.log("pelilpogiikaka ajaa varokaa");
+// Setting up a XMLHttpRequest
+let xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://localhost:8080/rows/');
+xhr.responseType = 'json';
+xhr.setRequestHeader('Accept', 'application/json');
+
+// Setting up a marking XMLHttpRequest
+let mark_xhr = new XMLHttpRequest();
 
 function post(path, params, method = "post") {
   // The rest of this code assumes you are not using a library.
@@ -22,7 +30,6 @@ function post(path, params, method = "post") {
       form.appendChild(hiddenField);
     }
   }
-
   document.body.appendChild(form);
   form.submit();
 }
@@ -34,10 +41,10 @@ var createClickHandler = function(element, rowNum, colNum) {
       var color;
       if (playerTurn === 1) {
         sign = "X";
-        color = "rgb(124, 252, 0)";
+        // color = "rgb(124, 252, 0)";
       } else {
         sign = "O";
-        color = "rgb(250, 128, 114)";
+        //  color = "rgb(250, 128, 114)";
       }
       element.innerHTML = sign;
       element.style.backgroundColor = color;
@@ -58,16 +65,15 @@ var createClickHandler = function(element, rowNum, colNum) {
       switchTurn();
       var postData = {
         rowNumber: rowNum,
+        colNumber: colNum,
         rowContent: rowData,
         newPlayerNumber: playerTurn
       };
-      post("/rows/mark", postData);
-
-      if (checkWinningCondition() === true) {
-        alert("Player " + playerTurn + " won!");
-      } else {
-        //  fixBoardSize();
-      }
+      console.log("lähtee " + postData.rowNumber + " " + postData.rowContent + " " + postData.newPlayerNumber);
+      mark_xhr.open('POST', 'http://localhost:8080/rows/mark/');
+      mark_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      mark_xhr.send(JSON.stringify(postData));
+      // post("/rows/mark", postData);
     }
   };
 };
@@ -84,6 +90,8 @@ if (document.readyState !== "loading") {
 
 function initializeCode() {
   console.log("initializing!!");
+  
+  // Initiating player turn system and rendering board
   var playerText = document.getElementById("turnIndicator").innerHTML;
   if (playerText === "Second persons turn") {
     playerTurn = 2;
@@ -108,6 +116,15 @@ function initializeCode() {
       index++;
     }
   }
+
+  // Game ending event system for document
+  gameOverEvent = document.createEvent("Event");
+  gameOverEvent.initEvent("gameOver", true, true);
+  document.addEventListener("gameOver", gameEnded);
+
+  // HTTPS-request stuff (alternative AJAX or XMLHTTPREQUESTS)
+  // loadAjax();
+  xhr.send();
 }
 
 function initBoardData() {
@@ -118,6 +135,110 @@ function initBoardData() {
     }
     boardData.push(rowData);
   }
+}
+
+xhr.onload = function() {
+  if (xhr.status == 200) {
+    console.log("xhr-status: " + xhr.status);
+    console.log(JSON.stringify(xhr.response));
+    // Response has rows_list and playernumber
+    let newBoardData = xhr.response.rows_list;
+    let newPlayerNumber = xhr.response.playerturn;
+
+    // Updating the playernumber
+    updatePlayerNumber(newPlayerNumber);
+    console.log("chr-jotain: " + newBoardData[1].content);
+    var rows = boord.getElementsByTagName("tr");
+      var cellsInRow;
+      for ( let i = 0; i < 5; i++ ) {
+        cellsInRow = rows[i].getElementsByTagName("td");
+        console.log("löydetty rivi: " + cellsInRow);
+        for ( let j = 0; j < 5; j++ ) {
+          console.log("onko löydetty cell riviltä: " + cellsInRow[j].innerHTML);
+          cellsInRow[j].innerHTML = newBoardData[i].content[j];
+          boardData[i][j] = newBoardData[i].content[j];
+        }
+      }
+      if ( checkWinningCondition() === true ) {
+        console.log("peli päättynyt on");
+        document.dispatchEvent(gameOverEvent);
+      }
+      else {
+        xhr.open('GET', 'http://localhost:8080/rows/');
+        xhr.responseType = 'json';
+        xhr.setRequestHeader('Accept', 'application/json');
+        window.setTimeout(function() {xhr.send()}, 2000);
+      }
+  }
+  else {
+    xhr.open('GET', 'http://localhost:8080/rows/');
+    xhr.responseType = 'json';
+    xhr.setRequestHeader('Accept', 'application/json');
+    console.log("xhr status muutakuin 200. OIkeasti on: " + xhr.status);
+    window.setTimeout(function() {xhr.send()}, 2000);
+  }
+}
+
+xhr.onerror = function() {
+  console.log("XHR kusee");
+}
+
+mark_xhr.onload = function() {
+  console.log("merkki on merkattu");
+  // Tässä voisi freezata kaikki ikkunat kunnes toinen pelaaja ton tehnyt siirtonsa
+  // Lisäisi taulukon classeihin (tai block content, tai html bodyyn) "freeze"-classin
+  // document.getElementsByTag("body").classList.add("freeze");
+  // Ja tämä -> css.tiedostoon:
+  // .freeze { pointer-events: none; }
+}
+
+mark_xhr.onerror = function() {
+  console.logo("mark_XHR kusee");
+}
+
+function updatePlayerNumber(number) {
+  playerTurn = number;
+  var playerText = document.getElementById('turnIndicator');
+  if (playerTurn === 1) {
+    playerText.innerHTML = "First persons turn";
+  }
+  else if ( playerTurn === 2) {
+    playerText.innerHTML = "Second persons turn";
+  }
+  else {
+    playerText.innerHTML = "First to reach 5 in a row wins!";
+  }
+}
+
+// See https://www.npmjs.com/package/superagent
+function loadAjax() {
+  superagent
+    .get("http://localhost:8080/rows/")
+    .set('Accept', 'application/json')
+    .then(res => {
+      // res.body, res.headers, res.status
+      console.log(res.status);
+      console.log(res.body);
+      // Neat! Superagent automatically parsed the JSON data
+      var rows = boord.getElementsByTagName("tr");
+      var cellsInRow;
+      for ( let i = 0; i < 5; i++ ) {
+        cellsInRow = rows[i].getElementsByTagName("td");
+        console.log("löydetty rivi: " + cellsInRow);
+        for ( let j = 0; j < 5; j++ ) {
+          console.log("onko löydetty cell riviltä: " + cellsInRow[j].innerHTML);
+          cellsInRow[j].innerHTML = res.body[i].content[j];
+        }
+      }
+      window.setTimeout(loadAjax, 1000);
+    })
+    .catch(err => {
+      // err.message, err.response
+      console.log("ERROR");
+      console.log(err.message);
+      console.log(err.response);
+      window.setTimeout(loadAjax, 1000);
+    });
 }
 
 function switchTurn() {
@@ -285,4 +406,9 @@ function checkWinningCondition() {
     return true;
   }
   return false;
+}
+
+function gameEnded() {
+  playerTurn = (playerTurn % 2) + 1;
+  alert("Player " + playerTurn + " won!");
 }
